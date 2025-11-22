@@ -22,7 +22,7 @@ import arrow
 
 from topydo.lib.Config import config
 from topydo.lib.ProgressColor import progress_color
-from topydo.lib.Utils import escape_ansi, get_terminal_size, humanize_date
+from topydo.lib.Utils import escape_ansi, get_terminal_size, humanize_date, humanize_datetime
 
 MAIN_PATTERN = (r'^({{(?P<before>.+?)}})?'
                 r'(?P<placeholder>{ph}|\[{ph}\])'
@@ -199,11 +199,11 @@ class ListFormatParser(object):
             # text (truncated if necessary)
             'S': lambda t: t.text(),
 
-            # absolute start date
-            't': lambda t: t.start_date().isoformat() if t.start_date() else '',
+            # absolute start date/time (raw tag value to preserve time)
+            't': lambda t: t.tag_value(config().tag_start()) or '',
 
-            # relative start date
-            'T': lambda t: humanize_date(t.start_date()) if t.start_date() else '',
+            # relative start date/time
+            'T': lambda t: humanize_datetime(t.start_datetime()) if t.start_datetime() else '',
 
             # unique text ID
             'u': self.todolist.uid if self.todolist else lambda _ : '',

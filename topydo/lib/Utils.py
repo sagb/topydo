@@ -20,7 +20,7 @@ Various utility functions.
 
 import re
 from collections import namedtuple
-from datetime import date
+from datetime import date, datetime
 
 import arrow
 
@@ -40,6 +40,30 @@ def date_string_to_date(p_date):
                 int(parsed_date.group(2)),  # month
                 int(parsed_date.group(3))   # day
             )
+        else:
+            raise ValueError
+
+    return result
+
+
+def datetime_string_to_datetime(p_datetime):
+    """
+    Given a datetime in YYYY-MM-DD[-HH[-MM[-SS]]] format, returns a Python
+    datetime object. Missing time parts default to 00. Returns None when
+    p_datetime is falsy. Raises ValueError if invalid.
+    """
+    result = None
+
+    if p_datetime:
+        parsed = re.match(r'(\d{4})-(\d{2})-(\d{2})(?:-(\d{2})(?:-(\d{2})(?:-(\d{2}))?)?)?$', p_datetime)
+        if parsed:
+            year = int(parsed.group(1))
+            month = int(parsed.group(2))
+            day = int(parsed.group(3))
+            hour = int(parsed.group(4) or 0)
+            minute = int(parsed.group(5) or 0)
+            second = int(parsed.group(6) or 0)
+            result = datetime(year, month, day, hour, minute, second)
         else:
             raise ValueError
 
@@ -113,3 +137,33 @@ def humanize_date(p_datetime):
     now = arrow.now()
     _date = now.replace(day=p_datetime.day, month=p_datetime.month, year=p_datetime.year)
     return _date.humanize(now).replace('just now', 'today')
+
+
+def humanize_datetime(p_dt):
+    """ Returns a relative string from a datetime object (time-aware). """
+    if not p_dt:
+        return ''
+    now = arrow.now()
+    return arrow.get(p_dt).humanize(now).replace('just now', 'today')
+
+
+def merge_date_with_time_from_tag(p_date, p_start_tag_value):
+    """
+    Given a date and an original start tag value, return a start string that
+    preserves time components (HH[-MM[-SS]]) if present in the original.
+    """
+    if not p_start_tag_value:
+        return p_date.isoformat()
+
+    m = re.match(r'^(\d{4}-\d{2}-\d{2})(?:-(\d{2})(?:-(\d{2})(?:-(\d{2}))?)?)?$', p_start_tag_value)
+    # If no time parts present, return date-only ISO.
+    if not m or not m.group(2):
+        return p_date.isoformat()
+
+    parts = [p_date.isoformat(), m.group(2)]
+    if m.group(3):
+        parts.append(m.group(3))
+        if m.group(4):
+            parts.append(m.group(4))
+
+    return '-'.join(parts)

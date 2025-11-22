@@ -15,10 +15,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+from datetime import datetime
 
 from topydo.lib.Config import config
 from topydo.lib.RelativeDate import relative_date_to_date
-from topydo.lib.Utils import date_string_to_date
+from topydo.lib.Utils import date_string_to_date, datetime_string_to_datetime
 
 
 class Filter(object):
@@ -283,11 +284,20 @@ class OrdinalTagFilter(OrdinalFilter):
             return resort_to_grep_filter()
 
         try:
-            operand1 = date_string_to_date(p_todo.tag_value(self.key))
-            operand2 = relative_date_to_date(self.value)
+            if self.key == config().tag_start():
+                operand1 = datetime_string_to_datetime(p_todo.tag_value(self.key))
+                operand2 = relative_date_to_date(self.value)
 
-            if not operand2:
-                operand2 = date_string_to_date(self.value)
+                if operand2:
+                    operand2 = datetime(operand2.year, operand2.month, operand2.day)
+                else:
+                    operand2 = datetime_string_to_datetime(self.value)
+            else:
+                operand1 = date_string_to_date(p_todo.tag_value(self.key))
+                operand2 = relative_date_to_date(self.value)
+
+                if not operand2:
+                    operand2 = date_string_to_date(self.value)
 
         except ValueError:
             operand1 = p_todo.tag_value(self.key)

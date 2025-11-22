@@ -20,7 +20,7 @@ from topydo.lib.Config import config
 from topydo.lib.MultiCommand import MultiCommand
 from topydo.lib.prettyprinters.Numbers import PrettyPrinterNumbers
 from topydo.lib.RelativeDate import relative_date_to_date
-from topydo.lib.Utils import date_string_to_date
+from topydo.lib.Utils import date_string_to_date, merge_date_with_time_from_tag
 
 
 class PostponeCommand(MultiCommand):
@@ -69,8 +69,9 @@ class PostponeCommand(MultiCommand):
                 if self.move_start_date and todo.start_date():
                     length = todo.length()
                     new_start = new_due - timedelta(length)
+                    orig_start_str = todo.tag_value(config().tag_start())
                     # pylint: disable=E1103
-                    todo.set_tag(config().tag_start(), new_start.isoformat())
+                    todo.set_tag(config().tag_start(), merge_date_with_time_from_tag(new_start, orig_start_str))
                 elif self.move_start_date and not todo.start_date():
                     self.error("Warning: todo item has no (valid) start date, therefore it was not adjusted.")
 

@@ -21,6 +21,7 @@ from datetime import date, timedelta
 from topydo.lib.Config import config
 from topydo.lib.RelativeDate import relative_date_to_date
 from topydo.lib.Todo import Todo
+from topydo.lib.Utils import merge_date_with_time_from_tag
 
 
 class NoRecurrenceException(Exception):
@@ -66,14 +67,16 @@ def advance_recurring_todo(p_todo, p_offset=None, p_strict=False):
        todo.set_tag(config().tag_due(), new_due.isoformat())
        if todo.start_date():
            new_start = new_due - timedelta(length)
-           todo.set_tag(config().tag_start(), new_start.isoformat())
+           orig_start_str = todo.tag_value(config().tag_start())
+           todo.set_tag(config().tag_start(), merge_date_with_time_from_tag(new_start, orig_start_str))
     else: #only start date
         if p_strict:
             offset = todo.start_date()
         else:
             offset = p_offset or date.today()
         new_start = relative_date_to_date(pattern, offset)
-        todo.set_tag(config().tag_start(), new_start.isoformat())
+        orig_start_str = todo.tag_value(config().tag_start())
+        todo.set_tag(config().tag_start(), merge_date_with_time_from_tag(new_start, orig_start_str))
 
     if config().auto_creation_date():
         todo.set_creation_date(date.today())

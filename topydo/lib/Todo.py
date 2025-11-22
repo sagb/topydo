@@ -18,11 +18,11 @@
 This module provides the Todo class.
 """
 
-from datetime import date
+from datetime import date, datetime
 
 from topydo.lib.Config import config
 from topydo.lib.TodoBase import TodoBase
-from topydo.lib.Utils import date_string_to_date
+from topydo.lib.Utils import date_string_to_date, datetime_string_to_datetime
 
 
 class Todo(TodoBase):
@@ -49,7 +49,16 @@ class Todo(TodoBase):
 
     def start_date(self):
         """ Returns a date object of the todo's start date. """
-        return self.get_date(config().tag_start())
+        dt = self.start_datetime()
+        return dt.date() if dt else None
+
+    def start_datetime(self):
+        """ Returns a datetime object of the todo's start date and time. """
+        string = self.tag_value(config().tag_start())
+        try:
+            return datetime_string_to_datetime(string) if string else None
+        except ValueError:
+            return None
 
     def due_date(self):
         """ Returns a date object of the todo's due date. """
@@ -57,11 +66,11 @@ class Todo(TodoBase):
 
     def is_active(self):
         """
-        Returns True when the start date is today or in the past and the
+        Returns True when the start datetime is now or in the past and the
         task has not yet been completed.
         """
-        start = self.start_date()
-        return not self.is_completed() and (not start or start <= date.today())
+        start = self.start_datetime()
+        return not self.is_completed() and (not start or start <= datetime.now())
 
     def is_overdue(self):
         """

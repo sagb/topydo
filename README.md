@@ -21,7 +21,7 @@ Features
 Feature-wise, the todo.txt format is quite limited, but can be extended using
 tags. topydo natively supports some of these tags to implement:
 
-* **Due** and **start dates**;
+* **Due** and **start dates** (t: supports optional time HH[-MM[-SS]]; shown by ls; preserved by recurrence/postpone);
 * Maintain **dependencies** between todo items;
 * **recurring** todo items;
 
